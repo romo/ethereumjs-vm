@@ -7,8 +7,7 @@ const Transaction = require('ethereumjs-tx')
 const Block = require('ethereumjs-block')
 
 exports.dumpState = function (state, cb) {
-
-  function readAccounts(state) {
+  function readAccounts (state) {
     return new Promise((resolve, reject) => {
       let accounts = []
       var rs = state.createReadStream()
@@ -24,7 +23,7 @@ exports.dumpState = function (state, cb) {
     })
   }
 
-  function readStorage(state, account) {
+  function readStorage (state, account) {
     return new Promise((resolve, reject) => {
       let storage = {}
       let storageTrie = state.copy()
@@ -41,7 +40,7 @@ exports.dumpState = function (state, cb) {
     })
   }
 
-  readAccounts(state).then(function(accounts) {
+  readAccounts(state).then(function (accounts) {
     async.mapSeries(accounts, function (account, cb) {
       readStorage(state, account).then((storage) => {
         account.storage = storage
@@ -49,15 +48,18 @@ exports.dumpState = function (state, cb) {
       })
     },
     function (err, results) {
+      if (err) {
+        cb(err, null)
+      }
       for (let i = 0; i < results.length; i++) {
-        console.log('SHA3\'d address: '+results[i].address.toString('hex'))
-        console.log('\tstate root: '+results[i].stateRoot.toString('hex'))
+        console.log('SHA3\'d address: ' + results[i].address.toString('hex'))
+        console.log('\tstate root: ' + results[i].stateRoot.toString('hex'))
         console.log('\tstorage: ')
-        for (storageKey in results[i].storage) {
-          console.log('\t\t'+storageKey+': '+results[i].storage[storageKey])
+        for (let storageKey in results[i].storage) {
+          console.log('\t\t' + storageKey + ': ' + results[i].storage[storageKey])
         }
-        console.log('\tnonce: '+(new BN(results[i].nonce)).toString())
-        console.log('\tbalance: '+(new BN(results[i].balance)).toString())
+        console.log('\tnonce: ' + (new BN(results[i].nonce)).toString())
+        console.log('\tbalance: ' + (new BN(results[i].balance)).toString())
       }
       return cb()
     })
